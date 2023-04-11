@@ -11,3 +11,4 @@ This application can fetch daily leetcode problem with Selenium and send the inf
 ```CLI
 python lc_bot.py -hk <hook-for-forum> -t <time every day you want to send> -d <hook-for-sending-service-status> 
 ```
+![alt text](https://github.com/WilliamYWY/leetcode_bot_daily/blob/main/dc_snapshot.png)
