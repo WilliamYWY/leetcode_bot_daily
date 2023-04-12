@@ -12,8 +12,12 @@ def get_lc_problem():
     # Set up the webdriver
     options = webdriver.ChromeOptions()
     options.add_argument("start-maximized")  # Maximize the window on open
-    options.add_argument("--disable-extensions")  # Disable any extensions
+    options.add_argument("--no-sandbox")  # Disable sandbox
     options.add_argument("--headless")  # Run in headless mode (without GUI)
+    options.add_argument(
+        "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.5481.177 Safari/537.36"
+    )
+    options.add_argument("--disable-dev-shm-usage")
     driver = webdriver.Chrome(options=options)
 
     # Navigate to the LeetCode main page
@@ -66,6 +70,17 @@ def send_alert(content, dev_url):
     result = requests.post(dev_url, json=body)
 
 
+def debug():
+    if args.dev:
+        send_alert("Start LC daily service!!!", args.dev)
+
+    title, text, link = get_lc_problem()
+    send_message(title, text, link)
+
+    if args.dev:
+        send_alert("LC daily service is down!!!", args.dev)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-hk", "--hook", help="Webhook url", required=True)
@@ -96,6 +111,8 @@ if __name__ == "__main__":
                 except:
                     retried += 1
                     continue
+            if retried >= 5:
+                break
     finally:
         if args.dev:
             send_alert("LC daily service is down!!!", args.dev)
