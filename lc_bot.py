@@ -85,34 +85,59 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-hk", "--hook", help="Webhook url", required=True)
     parser.add_argument(
-        "-t", "--time", help="Time to update every day (hours only 0-23)", default=7
+        "-t", "--time", help="Time to update every day (ex: 7:30)", default="7:00"
+    )
+    parser.add_argument(
+        "-n", "--now", help="time to start (ex '2023-04-04 07:00')", default=None
     )
     parser.add_argument("-d", "--dev", help="additional hook for info", default=None)
+    debug_parser = parser.add_mutually_exclusive_group(required=False)
+    debug_parser.add_argument("--debug", dest="debug", action="store_true")
+    debug_parser.add_argument("--no-debug", dest="debug", action="store_false")
+    parser.set_defaults(debug=False)
     args = parser.parse_args()
     WEBHOOK_URL = args.hook
-    hour = int(args.time)
+    update_time = args.time
+    hour = int(update_time.split(":")[0])
+    minute = int(update_time.split(":")[-1])
+
+    if not args.now:
+        now = datetime.datetime.now()
+    else:
+        now = datetime.datetime.strptime(args.now, "%Y-%m-%d %H:%M")
+
     if args.dev:
         send_alert("Start LC daily service!!!", args.dev)
 
     try:
         while True:
-            now = datetime.datetime.now()
             target_datetime = datetime.datetime(
-                now.year, now.month, now.day + 1, hour, 0, 0
+                now.year, now.month, now.day + 1, hour, minute, 0
             )
             time_diff = (target_datetime - now).total_seconds()
+            if args.debug:
+                send_alert(f"host time: {str(now)} ", args.dev)
+                send_alert(f"Sleep for {time_diff} seconds", args.dev)
+
             time.sleep(time_diff)
             retried = 0
             while retried < 5:
                 try:
                     title, text, link = get_lc_problem()
                     send_message(title, text, link)
+                    if args.debug:
+                        send_alert(title + text + link, args.dev)
                     break
-                except:
+                except Exception as e:
+                    send_alert(f"Error {str(e)}", args.dev)
                     retried += 1
                     continue
             if retried >= 5:
                 break
+
+            # update time
+            now = target_datetime
+
     finally:
         if args.dev:
             send_alert("LC daily service is down!!!", args.dev)
