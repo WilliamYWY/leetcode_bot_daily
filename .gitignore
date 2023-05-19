@@ -1,3 +1,4 @@
 .vscode/
 venv/
 Dockerfile
+__pycache__

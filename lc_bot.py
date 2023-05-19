@@ -26,7 +26,7 @@ def get_lc_problem():
         EC.presence_of_element_located(
             (
                 By.XPATH,
-                "//*[@class='-mx-4 md:mx-0']",
+                "//*[@class='inline-block min-w-full']",
             )
         )
     )
