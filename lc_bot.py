@@ -7,7 +7,6 @@ import time
 import datetime
 import argparse
 
-#fetch problem
 def get_lc_problem():
     # Set up the webdriver
     options = webdriver.ChromeOptions()
